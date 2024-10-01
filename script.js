@@ -1,13 +1,19 @@
-const API_KEY = "dc382007faeb4097bbdd0263f3ed65af";
-const url = "https://newsapi.org/v2/everything?q=";
+const url = "news.json";
 
-window.addEventListener('load', () => fetchNews("India"));
+window.addEventListener('load', () => fetchNews());
 
-async function fetchNews(query) {
-    const res = await fetch(`${url}${query}&apiKey=${API_KEY}`);
-    const data = await res.json();
-    console.log(data);
-    bindData(data.articles);
+async function fetchNews() {
+    try {
+        const res = await fetch(url);
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        console.log(data);
+        bindData(data.articles);
+    } catch (error) {
+        console.error("Failed to fetch news:", error);
+    }
 }
 
 function reload() {
@@ -23,7 +29,7 @@ function bindData(articles) {
         if (!article.urlToImage) return;
 
         const cardClone = newsCardTemplate.content.cloneNode(true);
-        fillDataInCard(cardClone, article);        
+        fillDataInCard(cardClone, article);
         cardsContainer.appendChild(cardClone);
     });
 }
@@ -33,17 +39,17 @@ function fillDataInCard(cardClone, article) {
     const newsTitle = cardClone.querySelector("#news-title");
     const newsSource = cardClone.querySelector("#news-source");
     const newsDesc = cardClone.querySelector("#news-desc");
-    
+
     newsImage.src = article.urlToImage;
     newsTitle.innerHTML = article.title;
     newsDesc.innerHTML = article.description;
-    
+
     const date = new Date(article.publishedAt).toLocaleString("en-US", {
         timeZone: "Asia/Jakarta"
     });
-    
+
     newsSource.innerHTML = `${article.source.name} - ${date}`;
-    
+
     cardClone.firstElementChild.addEventListener("click", () => {
         window.open(article.url, "_blank");
     });
@@ -51,7 +57,7 @@ function fillDataInCard(cardClone, article) {
 
 let curSelectedNav = null;
 function onNavItemClick(id) {
-    fetchNews(id);
+    fetchNews();
     const navItem = document.getElementById(id);
     if (curSelectedNav) {
         curSelectedNav.classList.remove("active");
@@ -67,7 +73,7 @@ searchButton.addEventListener("click", () => {
     const query = searchText.value.trim();
     if (!query) return;
     fetchNews(query);
-    
+
     if (curSelectedNav) {
         curSelectedNav.classList.remove("active");
         curSelectedNav = null;
